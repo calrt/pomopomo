@@ -21,13 +21,13 @@ let isMuted = false
 
 // Allow the user to start the timer
 const startTimer = () => {
+  timeConsumedInSeconds += 1
   const addSecond = () => {
     let secondIncrementer = setInterval(() => {
       if (isPaused == true) {
         clearInterval(secondIncrementer)
       } else {
         timeConsumedInSeconds ++
-        updateTimer()
         autoSwitchModes()
       }
     }, 1000)
@@ -42,7 +42,7 @@ const updateTimer = () => {
   let updatedTimeRemaining = formatTimeInSeconds(timeRemainingInSeconds)
 
   elements.timeRemaining.innerText = updatedTimeRemaining
-  elements.title.innerText = `${currentMode} ${updatedTimeRemaining} - Pomodoro`
+  elements.title.innerText = `${currentMode} ${updatedTimeRemaining} - pomopomo`
 }
 
 // Allow the user to adjust the time remaining while in progress
@@ -112,7 +112,7 @@ const init = () => {
   // Display the default work/relax length
   let timeRemaining = formatTimeInSeconds(workLengthInMinutes * 60)
   elements.timeRemaining.innerText = timeRemaining
-  elements.title.innerText = `${currentMode} ${timeRemaining} - Pomodoro`
+  elements.title.innerText = `${currentMode} ${timeRemaining} - pomopomo`
   elements.workLength.innerText = workLengthInMinutes
   elements.relaxLength.innerText = relaxLengthInMinutes
 
@@ -122,6 +122,11 @@ const init = () => {
   elements.muteButton.addEventListener('click', toggleMute)
   elements.workLengthRange.addEventListener('input', (e) => adjustTime('Work', e.target.value))
   elements.relaxLengthRange.addEventListener('input', (e) => adjustTime('Relax', e.target.value))
+  setInterval(() => {
+    if (!isPaused) {
+      updateTimer()
+    }
+  }, 1000)
 }
 
 init()
