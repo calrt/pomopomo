@@ -30,6 +30,7 @@ const startTimer = () => {
         timeConsumedInSeconds ++
         autoSwitchModes()
       }
+      updateTimer()
     }, 1000)
   }
   addSecond()
@@ -122,11 +123,6 @@ const init = () => {
   elements.muteButton.addEventListener('click', toggleMute)
   elements.workLengthRange.addEventListener('input', (e) => adjustTime('Work', e.target.value))
   elements.relaxLengthRange.addEventListener('input', (e) => adjustTime('Relax', e.target.value))
-  setInterval(() => {
-    if (!isPaused) {
-      updateTimer()
-    }
-  }, 1000)
 }
 
 init()
