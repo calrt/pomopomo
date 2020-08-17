@@ -109,7 +109,7 @@ const formatTimeInSeconds = (timeInSeconds) => {
 
 const toggleMute = () => {
   isMuted = !isMuted
-  isMuted ? elements.muteButton.value = 'Unmute' : elements.muteButton.value = 'Mute'
+  isMuted ? elements.muteButton.value = 'unmute' : elements.muteButton.value = 'mute'
 }
 
 const init = () => {
