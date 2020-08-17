@@ -23,6 +23,7 @@ input[type="button"] {
   border: none;
   padding: 1rem;
   font-family: 'Rubik', Arial, Helvetica, sans-serif;
+  font-size: 1rem;
   border-radius: 3rem;
   cursor: pointer;
   outline: none;
