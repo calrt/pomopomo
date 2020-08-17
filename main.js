@@ -127,6 +127,7 @@ const init = () => {
   elements.muteButton.addEventListener('click', toggleMute)
   elements.workLengthRange.addEventListener('input', (e) => adjustTime('Work', e.target.value))
   elements.relaxLengthRange.addEventListener('input', (e) => adjustTime('Relax', e.target.value))
+  startTimer()
 }
 
 init()
