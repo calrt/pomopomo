@@ -32,15 +32,7 @@ const startTimer = () => {
       }
     }, 1000)
   }
-
   addSecond()
-}
-
-// Allow the user to pause the timer
-const pauseTimer = () => {
-  // If timer is paused, disable the pause timer button and enable the start button
-  elements.pauseButton.setAttribute('disabled', true)
-  elements.startButton.removeAttribute('disabled')
 }
 
 // Update the countdown timer
@@ -110,7 +102,6 @@ const togglePause = () => {
   isPaused = !isPaused
   if (isPaused) {
     elements.toggleStartButton.value = 'start'
-    pauseTimer()
   } else {
     elements.toggleStartButton.value = 'pause'
     startTimer()
