@@ -1,7 +1,6 @@
 const elements = {
   modeHeader: document.querySelector('#mode-header'),
-  startButton: document.querySelector('#start'),
-  pauseButton: document.querySelector('#pause'),
+  toggleStartButton: document.querySelector('#toggle-start'),
   switchButton: document.querySelector('#switch'),
   muteButton: document.querySelector('#mute'),
   workLengthRange: document.querySelector('#work-time'),
@@ -17,15 +16,11 @@ let workLengthInMinutes = 25
 let relaxLengthInMinutes = 5
 let timeConsumedInSeconds = 0
 let currentMode = 'Work'
-let isPaused = false
+let isPaused = true
 let isMuted = false
 
 // Allow the user to start the timer
 const startTimer = () => {
-  isPaused = false
-  elements.startButton.setAttribute('disabled', true)
-  elements.pauseButton.removeAttribute('disabled')
-
   const addSecond = () => {
     let secondIncrementer = setInterval(() => {
       if (isPaused == true) {
@@ -43,7 +38,6 @@ const startTimer = () => {
 
 // Allow the user to pause the timer
 const pauseTimer = () => {
-  isPaused = true
   // If timer is paused, disable the pause timer button and enable the start button
   elements.pauseButton.setAttribute('disabled', true)
   elements.startButton.removeAttribute('disabled')
@@ -112,6 +106,17 @@ const toggleMute = () => {
   isMuted ? elements.muteButton.value = 'unmute' : elements.muteButton.value = 'mute'
 }
 
+const togglePause = () => {
+  isPaused = !isPaused
+  if (isPaused) {
+    elements.toggleStartButton.value = 'start'
+    pauseTimer()
+  } else {
+    elements.toggleStartButton.value = 'pause'
+    startTimer()
+  }
+}
+
 const init = () => {
   // Display the default work/relax length
   let timeRemaining = formatTimeInSeconds(workLengthInMinutes * 60)
@@ -121,13 +126,11 @@ const init = () => {
   elements.relaxLength.innerText = relaxLengthInMinutes
 
   // Setup the button click/input events
-  elements.startButton.addEventListener('click', startTimer)
-  elements.pauseButton.addEventListener('click', pauseTimer)
+  elements.toggleStartButton.addEventListener('click', togglePause)
   elements.switchButton.addEventListener('click', switchModes)
   elements.muteButton.addEventListener('click', toggleMute)
   elements.workLengthRange.addEventListener('input', (e) => adjustTime('Work', e.target.value))
   elements.relaxLengthRange.addEventListener('input', (e) => adjustTime('Relax', e.target.value))
-  startTimer()
 }
 
 init()
