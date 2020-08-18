@@ -21,7 +21,6 @@ let isMuted = false
 
 // Allow the user to start the timer
 const startTimer = () => {
-  timeConsumedInSeconds += 1
   const addSecond = () => {
     let secondIncrementer = setInterval(() => {
       if (isPaused == true) {
