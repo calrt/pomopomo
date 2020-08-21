@@ -26,6 +26,15 @@ html {
   margin-bottom: 2rem;
 }
 
+#created-by {
+  color: #8196b8;
+}
+
+#created-by a {
+  color: #8196b8;
+}
+
+
 a {
   color: #df5119;
 }
