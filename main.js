@@ -1,4 +1,6 @@
 const elements = {
+  favicon: document.querySelector('#favicon'),
+  title: document.querySelector('title'),
   modeHeader: document.querySelector('#mode-header'),
   toggleStartButton: document.querySelector('#toggle-start'),
   switchButton: document.querySelector('#switch'),
@@ -8,8 +10,7 @@ const elements = {
   workLength: document.querySelector('#work-length'),
   relaxLength: document.querySelector('#relax-length'),
   timeRemaining: document.querySelector('#time-remaining'),
-  ding: document.querySelector('#ding'),
-  title: document.querySelector('title')
+  ding: document.querySelector('#ding')
 }
 
 let workLengthInMinutes = 25
@@ -42,7 +43,7 @@ const updateTimer = () => {
   let updatedTimeRemaining = formatTimeInSeconds(timeRemainingInSeconds)
 
   elements.timeRemaining.innerText = updatedTimeRemaining
-  elements.title.innerText = `${currentMode} ${updatedTimeRemaining} - pomopomo`
+  elements.title.innerText = `${updatedTimeRemaining} - pomopomo`
 }
 
 // Allow the user to adjust the time remaining while in progress
@@ -71,9 +72,11 @@ const switchModes = () => {
   if (currentMode == 'Work') {
     currentMode = 'Relax'
     elements.modeHeader.innerText = currentMode
+    elements.favicon.href = "data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏝</text></svg>"
   } else {
     currentMode = 'Work'
     elements.modeHeader.innerText = currentMode
+    elements.favicon.href = "data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍅</text></svg>"
   }
   timeConsumedInSeconds = 0
   updateTimer()
@@ -112,7 +115,7 @@ const init = () => {
   // Display the default work/relax length
   let timeRemaining = formatTimeInSeconds(workLengthInMinutes * 60)
   elements.timeRemaining.innerText = timeRemaining
-  elements.title.innerText = `${currentMode} ${timeRemaining} - pomopomo`
+  elements.title.innerText = `${timeRemaining} - pomopomo`
   elements.workLength.innerText = workLengthInMinutes
   elements.relaxLength.innerText = relaxLengthInMinutes
 
