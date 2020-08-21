@@ -43,7 +43,7 @@ const updateTimer = () => {
   let updatedTimeRemaining = formatTimeInSeconds(timeRemainingInSeconds)
 
   elements.timeRemaining.innerText = updatedTimeRemaining
-  elements.title.innerText = `${updatedTimeRemaining} - pomopomo`
+  elements.title.innerText = `${updatedTimeRemaining} | pomopomo`
 }
 
 // Allow the user to adjust the time remaining while in progress
@@ -115,7 +115,7 @@ const init = () => {
   // Display the default work/relax length
   let timeRemaining = formatTimeInSeconds(workLengthInMinutes * 60)
   elements.timeRemaining.innerText = timeRemaining
-  elements.title.innerText = `${timeRemaining} - pomopomo`
+  elements.title.innerText = `${timeRemaining} | pomopomo`
   elements.workLength.innerText = workLengthInMinutes
   elements.relaxLength.innerText = relaxLengthInMinutes
 
