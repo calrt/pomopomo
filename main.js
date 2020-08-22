@@ -22,18 +22,15 @@ let isMuted = false
 
 // Allow the user to start the timer
 const startTimer = () => {
-  const addSecond = () => {
-    let secondIncrementer = setInterval(() => {
-      if (isPaused == true) {
-        clearInterval(secondIncrementer)
-      } else {
-        timeConsumedInSeconds ++
-        autoSwitchModes()
-      }
-      updateTimer()
-    }, 1000)
-  }
-  addSecond()
+  let secondIncrementer = setInterval(() => {
+    if (isPaused == true) {
+      clearInterval(secondIncrementer)
+    } else {
+      timeConsumedInSeconds += 0.25
+      autoSwitchModes()
+    }
+    updateTimer()
+  }, 250)
 }
 
 // Update the countdown timer
@@ -90,6 +87,7 @@ const formatTimeInSeconds = (timeInSeconds) => {
   }
 
   let seconds = timeInSeconds % 60
+  seconds = Math.trunc(seconds)
   if (seconds < 10) {
     seconds = `0${seconds}`
   }
