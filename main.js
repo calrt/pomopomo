@@ -26,11 +26,11 @@ const startTimer = () => {
     if (isPaused == true) {
       clearInterval(secondIncrementer)
     } else {
-      timeConsumedInSeconds += 0.25
+      timeConsumedInSeconds += 0.5
       autoSwitchModes()
     }
     updateTimer()
-  }, 250)
+  }, 500)
 }
 
 // Update the countdown timer
