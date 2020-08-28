@@ -63,5 +63,13 @@ input[type="button"]:disabled {
 }
 
 #about {
+  margin-left: auto;
+  margin-right: auto;
   font-size: 1rem;
+  color: #8196b8;
+  max-width: 300px;
+}
+
+#about a {
+  color: #8196b8;
 }
