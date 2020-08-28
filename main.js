@@ -19,6 +19,7 @@ let timeConsumedInSeconds = 0
 let currentMode = 'Work'
 let isPaused = true
 let isMuted = false
+let iOSAudioAdded = false
 
 // Allow the user to start the timer
 const startTimer = () => {
@@ -109,6 +110,28 @@ const togglePause = () => {
   }
 }
 
+const initMuteButton = () => {
+  // Check if the user is on mobile Safari (so we can enable sounds)
+  // https://stackoverflow.com/a/29696509
+  const userAgent = window.navigator.userAgent;
+  const iOS = !!userAgent.match(/iPad/i) || !!userAgent.match(/iPhone/i);
+  const webkit = !!userAgent.match(/WebKit/i);
+  if (userAgent && iOS && webkit) {
+    // change the text to 'unmute'
+    isMuted = true
+    elements.muteButton.value = 'unmute'
+    elements.ding.src = ''
+    // listen for the touchstart event on the unmute button
+    document.addEventListener('touchstart', () => {
+      if (!iOSAudioAdded) {
+        elements.ding.play()
+        elements.ding.src = './assets/ding.wav'
+        iOSAudioAdded = true
+      }
+    })
+  }
+}
+
 const init = () => {
   // Display the default work/relax length
   let timeRemaining = formatTimeInSeconds(workLengthInMinutes * 60)
@@ -123,6 +146,7 @@ const init = () => {
   elements.muteButton.addEventListener('click', toggleMute)
   elements.workLengthRange.addEventListener('input', (e) => adjustTime('Work', e.target.value))
   elements.relaxLengthRange.addEventListener('input', (e) => adjustTime('Relax', e.target.value))
+  initMuteButton()
 }
 
 init()
