@@ -20,18 +20,22 @@ let currentMode = 'Work'
 let isPaused = true
 let isMuted = false
 let iOSAudioAdded = false
+let latestUpdateTime = Date.now()
 
 // Allow the user to start the timer
 const startTimer = () => {
-  let secondIncrementer = setInterval(() => {
+  let runTimer = setInterval(() => {
     if (isPaused == true) {
-      clearInterval(secondIncrementer)
+      clearInterval(runTimer)
     } else {
-      timeConsumedInSeconds += 0.5
-      autoSwitchModes()
+      let currentTime = Date.now()
+      let timeToIncrement = (currentTime - latestUpdateTime) / 1000
+      latestUpdateTime = currentTime
+      timeConsumedInSeconds += timeToIncrement
     }
+    autoSwitchModes()
     updateTimer()
-  }, 500)
+  }, 100)
 }
 
 // Update the countdown timer
@@ -106,6 +110,7 @@ const togglePause = () => {
     elements.toggleStartButton.value = 'start'
   } else {
     elements.toggleStartButton.value = 'pause'
+    latestUpdateTime = Date.now()
     startTimer()
   }
 }
