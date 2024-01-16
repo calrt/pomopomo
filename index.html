@@ -10,12 +10,15 @@
     <title>pomopomo</title>
     <link id="favicon" rel="shortcut icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍅</text></svg>">
     <link rel="apple-touch-icon" href="apple-touch-icon.png" />
-    <link rel="stylesheet" href="/styles.css" type="text/css">
-    <script src="/main.js" defer></script>
+    <link rel="stylesheet" href="./styles.css" type="text/css">
+    <script src="./main.js" defer></script>
   </head>
   <body>
     <h1 id="mode-header">Work</h1>
     <h1 id="time-remaining">00:00</h1>
+    <div id="work-sessions-completed">
+      <span id="work-sessions-completed-count">0</span></br>work sessions completed
+    </div>
     <div id="work-slider">
       <label for="work-time">Work length:</label>
       <input type="range" id="work-time" name="work-time" min="1" max="60" value="25">
@@ -29,6 +32,7 @@
     <div id="buttons">
       <input type="button" id="toggle-start" value="start" title="Pause and start the timer">
       <input type="button" id="switch" value="switch" title="Switch between work and relax">
+      <input type="button" id="clear-complete" value="reset" title="Reset number of completed sessions to 0">
       <input type="button" id="mute" value="mute" title="Choose whether there is a ding when modes switch automatically">
     </div>
     <p id="about">The <a href="https://en.wikipedia.org/wiki/Pomodoro_Technique" target="_blank" rel="noopener noreferrer">Pomodoro technique</a> is designed to promote productivity by breaking work into achievable chunks.</p>

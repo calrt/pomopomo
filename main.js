@@ -5,12 +5,14 @@ const elements = {
   toggleStartButton: document.querySelector('#toggle-start'),
   switchButton: document.querySelector('#switch'),
   muteButton: document.querySelector('#mute'),
+  clearButton: document.querySelector('#clear-complete'),
   workLengthRange: document.querySelector('#work-time'),
   relaxLengthRange: document.querySelector('#relax-time'),
   workLength: document.querySelector('#work-length'),
   relaxLength: document.querySelector('#relax-length'),
   timeRemaining: document.querySelector('#time-remaining'),
-  ding: document.querySelector('#ding')
+  ding: document.querySelector('#ding'),
+  workSessionsCompletedCount: document.querySelector('#work-sessions-completed-count')
 }
 
 let workLengthInMinutes = 25
@@ -21,6 +23,7 @@ let isPaused = true
 let isMuted = false
 let iOSAudioAdded = false
 let latestUpdateTime = Date.now()
+let workSessionsCompleted = 0
 
 // Allow the user to start the timer
 const startTimer = () => {
@@ -65,6 +68,10 @@ const autoSwitchModes = () => {
     if (!isMuted) {
       elements.ding.play()
     }
+    if (currentMode == 'Work') {
+      workSessionsCompleted++
+      elements.workSessionsCompletedCount.innerText = (workSessionsCompleted).toString()
+      }
     switchModes()
   }
 }
@@ -115,6 +122,14 @@ const togglePause = () => {
   }
 }
 
+const clearCompletedSessions = () => {
+  workSessionsCompleted = 0
+  elements.workSessionsCompletedCount.innerText = '0'
+  console.log("shake")
+  elements.workSessionsCompletedCount.classList.add('shake');
+  setTimeout(() => elements.workSessionsCompletedCount.classList.remove('shake'), 500);
+}
+
 const initMuteButton = () => {
   // Check if the user is on mobile Safari (so we can enable sounds)
   // https://stackoverflow.com/a/29696509
@@ -149,6 +164,7 @@ const init = () => {
   elements.toggleStartButton.addEventListener('click', togglePause)
   elements.switchButton.addEventListener('click', switchModes)
   elements.muteButton.addEventListener('click', toggleMute)
+  elements.clearButton.addEventListener('click', clearCompletedSessions)
   elements.workLengthRange.addEventListener('input', (e) => adjustTime('Work', e.target.value))
   elements.relaxLengthRange.addEventListener('input', (e) => adjustTime('Relax', e.target.value))
   initMuteButton()
