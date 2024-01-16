@@ -4,7 +4,7 @@ const elements = {
   modeHeader: document.querySelector('#mode-header'),
   toggleStartButton: document.querySelector('#toggle-start'),
   switchButton: document.querySelector('#switch'),
-  muteButton: document.querySelector('#mute'),
+  volumeButton: document.querySelector('#volume'),
   clearButton: document.querySelector('#clear-complete'),
   workLengthRange: document.querySelector('#work-time'),
   relaxLengthRange: document.querySelector('#relax-time'),
@@ -24,6 +24,9 @@ let isMuted = false
 let iOSAudioAdded = false
 let latestUpdateTime = Date.now()
 let workSessionsCompleted = 0
+let volumeState = 0
+const volumeStates = ['🔇', '🔈', '🔉', '🔊']
+let isIOS = false
 
 // Allow the user to start the timer
 const startTimer = () => {
@@ -64,10 +67,7 @@ const autoSwitchModes = () => {
   let timerLengthInSeconds = currentMode == 'Work' ? workLengthInMinutes * 60 : relaxLengthInMinutes * 60
   let timeRemainingInSeconds = timerLengthInSeconds - timeConsumedInSeconds
   if (timeRemainingInSeconds <= 0) {
-    // Play a ding sound when mode switches (vary by mode?)
-    if (!isMuted) {
-      elements.ding.play()
-    }
+    elements.ding.play()
     if (currentMode == 'Work') {
       workSessionsCompleted++
       elements.workSessionsCompletedCount.innerText = (workSessionsCompleted).toString()
@@ -106,9 +106,39 @@ const formatTimeInSeconds = (timeInSeconds) => {
   return `${minutes}:${seconds}`
 }
 
-const toggleMute = () => {
-  isMuted = !isMuted
-  isMuted ? elements.muteButton.value = 'unmute' : elements.muteButton.value = 'mute'
+const cycleVolume = () => {
+  if (isIOS) {
+    // Toggle between mute and unmute for iOS
+    if (elements.ding.muted) {
+      elements.ding.muted = false;
+      elements.ding.volume = 1;
+      elements.volumeButton.value = '🔊';
+    } else {
+      elements.ding.muted = true;
+      elements.volumeButton.value = '🔇';
+    }
+  } else {
+    volumeState = (volumeState + 1) % 4;
+    elements.volumeButton.value = volumeStates[volumeState];
+    switch(volumeStates[volumeState]) {
+      case '🔇':
+        // Mute volume
+        elements.ding.volume = 0
+        break;
+      case '🔈':
+        // Set volume to low
+        elements.ding.volume = .2
+        break;
+      case '🔉':
+        // Set volume to medium
+        elements.ding.volume = .6
+        break;
+      case '🔊':
+        // Set volume to high
+        elements.ding.volume = 1
+        break;
+    }
+  }
 }
 
 const togglePause = () => {
@@ -125,30 +155,25 @@ const togglePause = () => {
 const clearCompletedSessions = () => {
   workSessionsCompleted = 0
   elements.workSessionsCompletedCount.innerText = '0'
-  console.log("shake")
   elements.workSessionsCompletedCount.classList.add('shake');
   setTimeout(() => elements.workSessionsCompletedCount.classList.remove('shake'), 500);
 }
 
-const initMuteButton = () => {
+const checkIfIOS = () => {
   // Check if the user is on mobile Safari (so we can enable sounds)
   // https://stackoverflow.com/a/29696509
   const userAgent = window.navigator.userAgent;
   const iOS = !!userAgent.match(/iPad/i) || !!userAgent.match(/iPhone/i);
   const webkit = !!userAgent.match(/WebKit/i);
   if (userAgent && iOS && webkit) {
-    // change the text to 'unmute'
-    isMuted = true
-    elements.muteButton.value = 'unmute'
     elements.ding.src = ''
-    // listen for the touchstart event on the unmute button
-    document.addEventListener('touchstart', () => {
-      if (!iOSAudioAdded) {
-        elements.ding.play()
-        elements.ding.src = './assets/ding.wav'
-        iOSAudioAdded = true
-      }
-    })
+    if (!iOSAudioAdded) {
+      elements.ding.play()
+      elements.ding.src = './assets/ding.wav'
+      elements.ding.muted = true
+      isIOS = true
+      iOSAudioAdded = true
+    }
   }
 }
 
@@ -163,11 +188,12 @@ const init = () => {
   // Setup the button click/input events
   elements.toggleStartButton.addEventListener('click', togglePause)
   elements.switchButton.addEventListener('click', switchModes)
-  elements.muteButton.addEventListener('click', toggleMute)
+  elements.volumeButton.addEventListener('click', cycleVolume)
   elements.clearButton.addEventListener('click', clearCompletedSessions)
   elements.workLengthRange.addEventListener('input', (e) => adjustTime('Work', e.target.value))
   elements.relaxLengthRange.addEventListener('input', (e) => adjustTime('Relax', e.target.value))
-  initMuteButton()
+  elements.ding.volume = 0
+  checkIfIOS()
 }
 
 init()

@@ -23,7 +23,9 @@ html {
 }
 
 #buttons {
+  display: inline-flex;
   margin-bottom: 2rem;
+  vertical-align: baseline;
 }
 
 #created-by {
@@ -40,16 +42,19 @@ a {
 
 input[type="button"] {
   -webkit-appearance: none;
+  appearance: none;
   -webkit-border-radius: 0;
+  border: none;
   background-color: #4c6081;
   color: #ebebeb;
-  border: none;
   padding: 1rem;
   font-family: 'Rubik', Arial, Helvetica, sans-serif;
   font-size: 1rem;
   border-radius: 3rem;
   cursor: pointer;
   outline: none;
+  margin-left: .2rem;
+  margin-right: .2rem;
 }
 
 input[type="button"]:disabled {
@@ -112,4 +117,12 @@ span#work-length, span#relax-length {
 .shake {
   animation: shake 0.5s;
   animation-iteration-count: 5;
+}
+
+#volume {
+  display: inline-block;
+  font-size: 1.5rem;
+  padding-top: .62rem;
+  padding-bottom: .62rem;
+  padding-right: .65rem;
 }
