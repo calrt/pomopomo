@@ -126,3 +126,137 @@ span#work-length, span#relax-length {
   padding-bottom: .62rem;
   padding-right: .65rem;
 }
+
+#historical-pomodoro {
+  margin-top: 20px;
+  text-align: center;
+}
+
+#historical-content {
+  background: rgba(36, 45, 61, 0.9);
+  border-radius: 10px;
+  padding: 0;
+  margin-top: 10px;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+  border: none;
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition: max-height 0.5s ease-in-out, opacity 0.3s ease-in-out, padding 0.5s ease-in-out;
+}
+
+#historical-content.visible {
+  max-height: 600px;
+  opacity: 1;
+  padding: 30px;
+}
+
+.chart-container {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+  transition-delay: 0.2s;
+}
+
+#historical-content.visible .chart-container {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+#timeframe-selector {
+  margin-bottom: 15px;
+}
+
+#timeframe-select {
+  padding: 8px 12px;
+  border-radius: 5px;
+  border: 1px solid rgba(223, 81, 25, 0.5);
+  background: #242d3d;
+  color: #ebebeb;
+  margin-left: 10px;
+  font-family: 'Rubik', Arial, Helvetica, sans-serif;
+  font-size: 0.9rem;
+  cursor: pointer;
+  outline: none;
+}
+
+#timeframe-select:focus {
+  border-color: rgba(223, 81, 25, 1);
+  box-shadow: 0 0 0 2px rgba(223, 81, 25, 0.2);
+}
+
+#daily-stats {
+  margin-bottom: 15px;
+  font-size: 1.1em;
+  color: #ebebeb;
+  background: rgba(36, 45, 61, 0.7);
+  padding: 10px 15px;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+#daily-stats p {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+#daily-pomodoro-count {
+  font-weight: bold;
+  color: rgba(223, 81, 25, 1);
+  background: rgba(223, 81, 25, 0.1);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+#pomodoro-chart {
+  width: 100% !important;
+  height: 300px !important;
+  margin-top: 20px;
+  box-shadow: none;
+  border: none !important;
+}
+
+/* Remove Chart.js default shadows and borders */
+canvas {
+  box-shadow: none !important;
+  border: none !important;
+}
+
+#toggle-history {
+  background-color: #4c6081;
+  color: #ebebeb;
+  border: none;
+  padding: 1rem;
+  font-family: 'Rubik', Arial, Helvetica, sans-serif;
+  font-size: 1rem;
+  border-radius: 3rem;
+  cursor: pointer;
+  outline: none;
+  margin-left: .2rem;
+  margin-right: .2rem;
+  transition: background-color 0.3s;
+  text-transform: lowercase;
+}
+
+#toggle-history:hover {
+  background-color: #5a7299;
+}
+
+@media (max-width: 600px) {
+  #time-remaining {
+    font-size: 4rem;
+  }
+  
+  #work-slider, #relax-slider {
+    font-size: 1rem;
+  }
+  
+  input#work-time, input#relax-time {
+    width: 120px;
+  }
+}

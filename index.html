@@ -20,6 +20,7 @@
     <link id="favicon" rel="shortcut icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍅</text></svg>">
     <link rel="apple-touch-icon" href="apple-touch-icon.png" />
     <link rel="stylesheet" href="./styles.css" type="text/css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="./main.js" defer></script>
   </head>
   <body>
@@ -42,7 +43,26 @@
       <input type="button" id="toggle-start" value="start" title="Pause and start the timer">
       <input type="button" id="switch" value="switch" title="Switch between work and relax">
       <input type="button" id="clear-complete" value="clear" title="Reset number of completed sessions to 0">
+      <input type="button" id="toggle-history" value="history" title="Toggle historical data">
       <input type="button" id="volume" value="🔇" title="Adjust volume">
+    </div>
+    <div id="historical-pomodoro">
+      <div id="historical-content" style="display: none;">
+        <div id="timeframe-selector">
+          <label for="timeframe-select">Timeframe: </label>
+          <select id="timeframe-select">
+            <option value="week">Past Week</option>
+            <option value="month">Past Month</option>
+            <option value="all">All Time</option>
+          </select>
+        </div>
+        <div id="daily-stats">
+          <p>Today's Pomodoros: <span id="daily-pomodoro-count">0</span></p>
+        </div>
+        <div class="chart-container">
+          <canvas id="pomodoro-chart"></canvas>
+        </div>
+      </div>
     </div>
     <p id="about">The <a href="https://en.wikipedia.org/wiki/Pomodoro_Technique" target="_blank" rel="noopener noreferrer">Pomodoro technique</a> is designed to promote productivity by breaking work into achievable chunks.</p>
     <p>

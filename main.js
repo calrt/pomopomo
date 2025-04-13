@@ -12,7 +12,12 @@ const elements = {
   relaxLength: document.querySelector('#relax-length'),
   timeRemaining: document.querySelector('#time-remaining'),
   ding: document.querySelector('#ding'),
-  workSessionsCompletedCount: document.querySelector('#work-sessions-completed-count')
+  workSessionsCompletedCount: document.querySelector('#work-sessions-completed-count'),
+  dailyPomodoroCount: document.querySelector('#daily-pomodoro-count'),
+  toggleHistoryButton: document.querySelector('#toggle-history'),
+  historicalContent: document.querySelector('#historical-content'),
+  timeframeSelect: document.querySelector('#timeframe-select'),
+  pomodoroChartCanvas: document.querySelector('#pomodoro-chart')
 }
 
 let workLengthInMinutes = 25
@@ -69,9 +74,10 @@ const autoSwitchModes = () => {
   if (timeRemainingInSeconds <= 0) {
     elements.ding.play()
     if (currentMode == 'Work') {
-      workSessionsCompleted++
-      elements.workSessionsCompletedCount.innerText = (workSessionsCompleted).toString()
-      }
+      workSessionsCompleted++;
+      elements.workSessionsCompletedCount.innerText = workSessionsCompleted.toString();
+      updateDailyHistory();
+    }
     switchModes()
   }
 }
@@ -177,13 +183,184 @@ const checkIfIOS = () => {
   }
 }
 
+const updateDailyHistory = () => {
+  const today = new Date().toISOString().slice(0,10);
+  let history = JSON.parse(localStorage.getItem('pomodoroHistory') || '{}');
+  if (!history[today]) {
+    history[today] = 0;
+  }
+  history[today]++;
+  localStorage.setItem('pomodoroHistory', JSON.stringify(history));
+  if (elements.dailyPomodoroCount) {
+    elements.dailyPomodoroCount.innerText = history[today];
+  }
+};
+
+const updateDailyDisplay = () => {
+  const today = new Date().toISOString().slice(0,10);
+  let history = JSON.parse(localStorage.getItem('pomodoroHistory') || '{}');
+  const todayCount = history[today] || 0;
+  if (elements.dailyPomodoroCount) {
+    elements.dailyPomodoroCount.innerText = todayCount;
+  }
+};
+
+const updateHistoryChart = () => {
+  const selectedTimeframe = elements.timeframeSelect.value;
+  let history = JSON.parse(localStorage.getItem('pomodoroHistory') || '{}');
+  let dates = Object.keys(history).sort();
+  const today = new Date();
+  let filteredDates;
+  
+  // Calculate the date range based on selected timeframe
+  const startDate = new Date();
+  if (selectedTimeframe === 'week') {
+    startDate.setDate(today.getDate() - 7);
+  } else if (selectedTimeframe === 'month') {
+    startDate.setDate(today.getDate() - 30);
+  } else {
+    startDate.setTime(0); // All time
+  }
+
+  // Filter dates within the selected range
+  filteredDates = dates.filter(dateStr => {
+    const dateObj = new Date(dateStr);
+    return dateObj >= startDate;
+  });
+
+  // Fill in missing dates with zero values
+  const allDates = [];
+  const currentDate = new Date(startDate);
+  while (currentDate <= today) {
+    const dateStr = currentDate.toISOString().slice(0, 10);
+    allDates.push(dateStr);
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+
+  const dataPoints = allDates.map(date => history[date] || 0);
+  const labels = allDates.map(date => {
+    const [year, month, day] = date.split('-');
+    return `${month}/${day}`;
+  });
+
+  if (window.historyChart) {
+    window.historyChart.data.labels = labels;
+    window.historyChart.data.datasets[0].data = dataPoints;
+    window.historyChart.update();
+  } else {
+    window.historyChart = new Chart(elements.pomodoroChartCanvas, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Pomodoros Completed',
+          data: dataPoints,
+          backgroundColor: 'rgba(223, 81, 25, 0.2)',
+          borderColor: 'rgba(223, 81, 25, 1)',
+          borderWidth: 2,
+          fill: true,
+          tension: 0.4,
+          pointBackgroundColor: 'rgba(223, 81, 25, 1)',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2,
+          pointRadius: 4,
+          pointHoverRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        layout: {
+          padding: {
+            left: 15,
+            right: 25,
+            top: 20,
+            bottom: 20
+          }
+        },
+        animation: {
+          duration: 750,
+          easing: 'easeInOutQuart'
+        },
+        plugins: {
+          legend: {
+            display: false
+          },
+          tooltip: {
+            backgroundColor: 'rgba(36, 45, 61, 0.9)',
+            titleColor: '#ebebeb',
+            bodyColor: '#ebebeb',
+            borderColor: 'rgba(223, 81, 25, 0.5)',
+            borderWidth: 1,
+            padding: 10,
+            callbacks: {
+              title: (items) => {
+                const date = items[0].label;
+                return `Date: ${date}`;
+              },
+              label: (item) => `Pomodoros: ${item.raw}`
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: {
+              color: 'rgba(255, 255, 255, 0.1)',
+              drawBorder: false,
+              borderWidth: 0,
+              display: true
+            },
+            border: {
+              display: false
+            },
+            ticks: {
+              color: '#ebebeb',
+              font: {
+                family: "'Rubik', Arial, Helvetica, sans-serif",
+                size: 11
+              },
+              maxRotation: 45,
+              minRotation: 45,
+              autoSkip: true,
+              maxTicksLimit: 8,
+              padding: 8
+            }
+          },
+          y: {
+            beginAtZero: true,
+            grid: {
+              color: 'rgba(255, 255, 255, 0.1)',
+              drawBorder: false,
+              borderWidth: 0,
+              display: true
+            },
+            border: {
+              display: false
+            },
+            ticks: {
+              color: '#ebebeb',
+              stepSize: 1,
+              font: {
+                family: "'Rubik', Arial, Helvetica, sans-serif",
+                size: 12
+              },
+              padding: 12
+            }
+          }
+        }
+      }
+    });
+  }
+};
+
 const init = () => {
-  // Display the default work/relax length
-  let timeRemaining = formatTimeInSeconds(workLengthInMinutes * 60)
-  elements.timeRemaining.innerText = timeRemaining
-  document.title = `${timeRemaining} | pomopomo`
   elements.workLength.innerText = workLengthInMinutes
   elements.relaxLength.innerText = relaxLengthInMinutes
+  elements.workLengthRange.value = workLengthInMinutes
+  elements.relaxLengthRange.value = relaxLengthInMinutes
+  updateTimer()
+  checkIfIOS()
+  updateDailyDisplay()
 
   // Setup the button click/input events
   elements.toggleStartButton.addEventListener('click', togglePause)
@@ -193,7 +370,35 @@ const init = () => {
   elements.workLengthRange.addEventListener('input', (e) => adjustTime('Work', e.target.value))
   elements.relaxLengthRange.addEventListener('input', (e) => adjustTime('Relax', e.target.value))
   elements.ding.volume = 0
-  checkIfIOS()
+
+  // Setup event listener for the History toggle button
+  if (elements.toggleHistoryButton && elements.historicalContent) {
+    elements.toggleHistoryButton.addEventListener('click', () => {
+      const content = elements.historicalContent;
+      const isHidden = !content.classList.contains('visible');
+      
+      if (isHidden) {
+        content.style.display = 'block';
+        // Allow the display change to take effect before adding the visible class
+        requestAnimationFrame(() => {
+          content.classList.add('visible');
+          updateDailyDisplay();
+          updateHistoryChart();
+        });
+      } else {
+        content.classList.remove('visible');
+        // Wait for the animation to complete before hiding
+        setTimeout(() => {
+          content.style.display = 'none';
+        }, 500); // Match the CSS transition duration
+      }
+    });
+  }
+
+  // Setup event listener for timeframe selection changes
+  if (elements.timeframeSelect) {
+    elements.timeframeSelect.addEventListener('change', updateHistoryChart);
+  }
 }
 
 init()
