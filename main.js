@@ -377,10 +377,10 @@ const updateNotificationState = (permission) => {
   const notificationIcon = elements.notificationButton.querySelector('i');
   
   if (permission === 'granted') {
-    notificationsEnabled = true;
+    // Don't automatically enable notifications or show a notification on page load
+    // Just update the icon to show they're available
     notificationIcon.classList.remove('fa-bell-slash');
     notificationIcon.classList.add('fa-bell');
-    showNotification('Notifications Enabled', 'You will now receive notifications when sessions complete.');
   } else {
     notificationsEnabled = false;
     notificationIcon.classList.remove('fa-bell');
