@@ -247,6 +247,25 @@ canvas {
   background-color: #5a7299;
 }
 
+#notifications {
+  background-color: #4c6081;
+  color: #ebebeb;
+  border: none;
+  padding: 1rem;
+  font-family: 'Rubik', Arial, Helvetica, sans-serif;
+  font-size: 1rem;
+  border-radius: 3rem;
+  cursor: pointer;
+  outline: none;
+  margin-left: .2rem;
+  margin-right: .2rem;
+  transition: background-color 0.3s;
+}
+
+#notifications:hover {
+  background-color: #5a7299;
+}
+
 @media (max-width: 600px) {
   #time-remaining {
     font-size: 4rem;

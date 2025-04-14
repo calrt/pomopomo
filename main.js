@@ -17,7 +17,8 @@ const elements = {
   toggleHistoryButton: document.querySelector('#toggle-history'),
   historicalContent: document.querySelector('#historical-content'),
   timeframeSelect: document.querySelector('#timeframe-select'),
-  pomodoroChartCanvas: document.querySelector('#pomodoro-chart')
+  pomodoroChartCanvas: document.querySelector('#pomodoro-chart'),
+  notificationButton: document.querySelector('#notifications')
 }
 
 let workLengthInMinutes = 25
@@ -32,6 +33,8 @@ let workSessionsCompleted = 0
 let volumeState = 0
 const volumeStates = ['🔇', '🔈', '🔉', '🔊']
 let isIOS = false
+let notificationsEnabled = false
+let notificationsPermission = 'default'
 
 // Allow the user to start the timer
 const startTimer = () => {
@@ -77,6 +80,11 @@ const autoSwitchModes = () => {
       workSessionsCompleted++;
       elements.workSessionsCompletedCount.innerText = workSessionsCompleted.toString();
       updateDailyHistory();
+      showNotification('Work Session Complete! 🎉', 
+        `You've completed ${workSessionsCompleted} work sessions today. Time for a break!`);
+    } else {
+      showNotification('Break Time Over ⏰', 
+        'Ready to get back to work?');
     }
     switchModes()
   }
@@ -353,6 +361,54 @@ const updateHistoryChart = () => {
   }
 };
 
+// Add function to handle notification permission
+const requestNotificationPermission = async () => {
+  try {
+    const permission = await Notification.requestPermission();
+    notificationsPermission = permission;
+    if (permission === 'granted') {
+      notificationsEnabled = true;
+      elements.notificationButton.value = '🔔';
+      // Show a test notification to confirm it's working
+      showNotification('Notifications Enabled', 'You will now receive notifications when sessions complete.');
+    } else {
+      notificationsEnabled = false;
+      elements.notificationButton.value = '🔕';
+    }
+  } catch (error) {
+    console.log('Notifications not supported');
+    elements.notificationButton.style.display = 'none';
+  }
+};
+
+// Add function to toggle notifications
+const toggleNotifications = async () => {
+  if (notificationsPermission === 'default') {
+    await requestNotificationPermission();
+  } else if (notificationsPermission === 'granted') {
+    notificationsEnabled = !notificationsEnabled;
+    elements.notificationButton.value = notificationsEnabled ? '🔔' : '🔕';
+    if (notificationsEnabled) {
+      showNotification('Notifications Enabled', 'You will now receive notifications when sessions complete.');
+    }
+  }
+};
+
+// Add function to show notification
+const showNotification = (title, body) => {
+  if (notificationsEnabled && notificationsPermission === 'granted') {
+    try {
+      new Notification(title, {
+        body: body,
+        icon: './apple-touch-icon.png',
+        requireInteraction: true
+      });
+    } catch (error) {
+      console.error('Error showing notification:', error);
+    }
+  }
+};
+
 const init = () => {
   elements.workLength.innerText = workLengthInMinutes
   elements.relaxLength.innerText = relaxLengthInMinutes
@@ -370,6 +426,23 @@ const init = () => {
   elements.workLengthRange.addEventListener('input', (e) => adjustTime('Work', e.target.value))
   elements.relaxLengthRange.addEventListener('input', (e) => adjustTime('Relax', e.target.value))
   elements.ding.volume = 0
+
+  // Check if notifications are supported and initialize
+  if ('Notification' in window) {
+    elements.notificationButton.addEventListener('click', toggleNotifications);
+    // Initialize button state based on existing permission
+    notificationsPermission = Notification.permission;
+    if (notificationsPermission === 'granted') {
+      notificationsEnabled = true;
+      elements.notificationButton.value = '🔔';
+    } else if (notificationsPermission === 'denied') {
+      notificationsEnabled = false;
+      elements.notificationButton.value = '🔕';
+      elements.notificationButton.title = 'Notifications are blocked. Please enable them in your browser settings.';
+    }
+  } else {
+    elements.notificationButton.style.display = 'none';
+  }
 
   // Setup event listener for the History toggle button
   if (elements.toggleHistoryButton && elements.historicalContent) {
