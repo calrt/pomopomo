@@ -24,8 +24,10 @@ html {
 
 #buttons {
   display: inline-flex;
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
   vertical-align: baseline;
+  gap: 0.5rem;
+  align-items: center;
 }
 
 #created-by {
@@ -40,27 +42,63 @@ a {
   color: #df5119;
 }
 
-input[type="button"] {
+button {
   -webkit-appearance: none;
   appearance: none;
   -webkit-border-radius: 0;
   border: none;
   background-color: #4c6081;
   color: #ebebeb;
-  padding: 1rem;
+  width: 3rem;
+  height: 3rem;
   font-family: 'Rubik', Arial, Helvetica, sans-serif;
   font-size: 1rem;
   border-radius: 3rem;
   cursor: pointer;
   outline: none;
-  margin-left: .2rem;
-  margin-right: .2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  padding: 0;
 }
 
-input[type="button"]:disabled {
+button:hover {
+  background-color: #5d759c;
+  transform: scale(1.05);
+}
+
+button:active {
+  transform: scale(0.95);
+}
+
+button:disabled {
   background-color: #354257;
   color: #949494;
   cursor: default;
+  transform: none;
+}
+
+button i {
+  font-size: 1.2rem;
+  line-height: 1;
+  width: 1.2rem;
+  height: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#toggle-start.playing i {
+  content: "\f04c";
+}
+
+#volume.unmuted i {
+  content: "\f028";
+}
+
+#notifications.enabled i {
+  content: "\f0f3";
 }
 
 #work-slider, #relax-slider {
@@ -128,7 +166,7 @@ span#work-length, span#relax-length {
 }
 
 #historical-pomodoro {
-  margin-top: 20px;
+  margin-top: 1rem;
   text-align: center;
 }
 

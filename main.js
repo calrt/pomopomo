@@ -31,7 +31,12 @@ let iOSAudioAdded = false
 let latestUpdateTime = Date.now()
 let workSessionsCompleted = 0
 let volumeState = 0
-const volumeStates = ['🔇', '🔈', '🔉', '🔊']
+const volumeStates = [
+  { icon: 'fa-volume-mute', volume: 0 },
+  { icon: 'fa-volume-off', volume: 0.2 },
+  { icon: 'fa-volume-low', volume: 0.6 },
+  { icon: 'fa-volume-high', volume: 1 }
+]
 let isIOS = false
 let notificationsEnabled = false
 let notificationsPermission = 'default'
@@ -126,43 +131,38 @@ const cycleVolume = () => {
     if (elements.ding.muted) {
       elements.ding.muted = false;
       elements.ding.volume = 1;
-      elements.volumeButton.value = '🔊';
+      updateVolumeIcon('fa-volume-high');
     } else {
       elements.ding.muted = true;
-      elements.volumeButton.value = '🔇';
+      updateVolumeIcon('fa-volume-mute');
     }
   } else {
-    volumeState = (volumeState + 1) % 4;
-    elements.volumeButton.value = volumeStates[volumeState];
-    switch(volumeStates[volumeState]) {
-      case '🔇':
-        // Mute volume
-        elements.ding.volume = 0
-        break;
-      case '🔈':
-        // Set volume to low
-        elements.ding.volume = .2
-        break;
-      case '🔉':
-        // Set volume to medium
-        elements.ding.volume = .6
-        break;
-      case '🔊':
-        // Set volume to high
-        elements.ding.volume = 1
-        break;
-    }
+    volumeState = (volumeState + 1) % volumeStates.length;
+    const currentState = volumeStates[volumeState];
+    elements.ding.volume = currentState.volume;
+    updateVolumeIcon(currentState.icon);
   }
 }
 
+const updateVolumeIcon = (iconClass) => {
+  const volumeIcon = elements.volumeButton.querySelector('i');
+  // Remove all volume classes
+  volumeStates.forEach(state => volumeIcon.classList.remove(state.icon));
+  volumeIcon.classList.add(iconClass);
+};
+
 const togglePause = () => {
-  isPaused = !isPaused
+  isPaused = !isPaused;
+  const playPauseIcon = elements.toggleStartButton.querySelector('i');
+  
   if (isPaused) {
-    elements.toggleStartButton.value = 'start'
+    playPauseIcon.classList.remove('fa-pause');
+    playPauseIcon.classList.add('fa-play');
   } else {
-    elements.toggleStartButton.value = 'pause'
-    latestUpdateTime = Date.now()
-    startTimer()
+    playPauseIcon.classList.remove('fa-play');
+    playPauseIcon.classList.add('fa-pause');
+    latestUpdateTime = Date.now();
+    startTimer();
   }
 }
 
@@ -366,18 +366,28 @@ const requestNotificationPermission = async () => {
   try {
     const permission = await Notification.requestPermission();
     notificationsPermission = permission;
-    if (permission === 'granted') {
-      notificationsEnabled = true;
-      elements.notificationButton.value = '🔔';
-      // Show a test notification to confirm it's working
-      showNotification('Notifications Enabled', 'You will now receive notifications when sessions complete.');
-    } else {
-      notificationsEnabled = false;
-      elements.notificationButton.value = '🔕';
-    }
+    updateNotificationState(permission);
   } catch (error) {
     console.log('Notifications not supported');
     elements.notificationButton.style.display = 'none';
+  }
+};
+
+const updateNotificationState = (permission) => {
+  const notificationIcon = elements.notificationButton.querySelector('i');
+  
+  if (permission === 'granted') {
+    notificationsEnabled = true;
+    notificationIcon.classList.remove('fa-bell-slash');
+    notificationIcon.classList.add('fa-bell');
+    showNotification('Notifications Enabled', 'You will now receive notifications when sessions complete.');
+  } else {
+    notificationsEnabled = false;
+    notificationIcon.classList.remove('fa-bell');
+    notificationIcon.classList.add('fa-bell-slash');
+    if (permission === 'denied') {
+      elements.notificationButton.title = 'Notifications are blocked. Please enable them in your browser settings.';
+    }
   }
 };
 
@@ -387,9 +397,14 @@ const toggleNotifications = async () => {
     await requestNotificationPermission();
   } else if (notificationsPermission === 'granted') {
     notificationsEnabled = !notificationsEnabled;
-    elements.notificationButton.value = notificationsEnabled ? '🔔' : '🔕';
+    const notificationIcon = elements.notificationButton.querySelector('i');
     if (notificationsEnabled) {
+      notificationIcon.classList.remove('fa-bell-slash');
+      notificationIcon.classList.add('fa-bell');
       showNotification('Notifications Enabled', 'You will now receive notifications when sessions complete.');
+    } else {
+      notificationIcon.classList.remove('fa-bell');
+      notificationIcon.classList.add('fa-bell-slash');
     }
   }
 };
@@ -427,19 +442,16 @@ const init = () => {
   elements.relaxLengthRange.addEventListener('input', (e) => adjustTime('Relax', e.target.value))
   elements.ding.volume = 0
 
+  // Initialize volume state
+  elements.ding.volume = 0;
+  updateVolumeIcon('fa-volume-mute');
+
   // Check if notifications are supported and initialize
   if ('Notification' in window) {
     elements.notificationButton.addEventListener('click', toggleNotifications);
     // Initialize button state based on existing permission
     notificationsPermission = Notification.permission;
-    if (notificationsPermission === 'granted') {
-      notificationsEnabled = true;
-      elements.notificationButton.value = '🔔';
-    } else if (notificationsPermission === 'denied') {
-      notificationsEnabled = false;
-      elements.notificationButton.value = '🔕';
-      elements.notificationButton.title = 'Notifications are blocked. Please enable them in your browser settings.';
-    }
+    updateNotificationState(notificationsPermission);
   } else {
     elements.notificationButton.style.display = 'none';
   }
