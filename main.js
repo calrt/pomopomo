@@ -88,6 +88,10 @@ const startTimer = () => {
     }
     autoSwitchModes()
     updateTimer()
+    // Save session state periodically (every 5 seconds) when timer is running
+    if (!isPaused && Math.floor(timeConsumedInSeconds) % 5 === 0) {
+      saveSessionState()
+    }
   }, 200)
 }
 
@@ -107,6 +111,7 @@ const adjustTime = (mode, newLength) => {
   elements.workLength.innerText = workLengthInMinutes
   elements.relaxLength.innerText = relaxLengthInMinutes
   updateTimer()
+  saveSessionState()
 }
 
 // Check whether the timer is at zero and switch between modes
@@ -142,6 +147,7 @@ const switchModes = () => {
   }
   timeConsumedInSeconds = 0
   updateTimer()
+  saveSessionState()
 }
 
 // Format the time remaining in MM:SS format
@@ -199,6 +205,7 @@ const togglePause = () => {
     latestUpdateTime = Date.now();
     startTimer();
   }
+  saveSessionState()
 }
 
 const clearCompletedSessions = () => {
@@ -206,6 +213,7 @@ const clearCompletedSessions = () => {
   elements.workSessionsCompletedCount.innerText = '0'
   elements.workSessionsCompletedCount.classList.add('shake');
   setTimeout(() => elements.workSessionsCompletedCount.classList.remove('shake'), 500);
+  saveSessionState()
 }
 
 const checkIfIOS = () => {
@@ -464,12 +472,137 @@ const showNotification = (title, body) => {
   }
 };
 
+// Session persistence functions
+const getCurrentDateKey = () => {
+  // Use the user's local timezone to determine the current date
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`; // Returns YYYY-MM-DD format in user's local timezone
+};
+
+const saveSessionState = () => {
+  const sessionData = {
+    currentMode: currentMode,
+    timeConsumedInSeconds: timeConsumedInSeconds,
+    workLengthInMinutes: workLengthInMinutes,
+    relaxLengthInMinutes: relaxLengthInMinutes,
+    isPaused: isPaused,
+    workSessionsCompleted: workSessionsCompleted,
+    lastSaved: Date.now(),
+    dateKey: getCurrentDateKey()
+  };
+  localStorage.setItem('pomodoroSessionState', JSON.stringify(sessionData));
+};
+
+const loadSessionState = () => {
+  const savedSession = localStorage.getItem('pomodoroSessionState');
+  if (!savedSession) return false;
+  
+  try {
+    const sessionData = JSON.parse(savedSession);
+    const currentDateKey = getCurrentDateKey();
+    
+    // Only restore if it's from the same day
+    if (sessionData.dateKey === currentDateKey) {
+      currentMode = sessionData.currentMode;
+      timeConsumedInSeconds = sessionData.timeConsumedInSeconds;
+      workLengthInMinutes = sessionData.workLengthInMinutes;
+      relaxLengthInMinutes = sessionData.relaxLengthInMinutes;
+      isPaused = sessionData.isPaused;
+      workSessionsCompleted = sessionData.workSessionsCompleted;
+      
+      // Update UI elements
+      elements.modeHeader.innerText = currentMode;
+      elements.workLength.innerText = workLengthInMinutes;
+      elements.relaxLength.innerText = relaxLengthInMinutes;
+      elements.workLengthRange.value = workLengthInMinutes;
+      elements.relaxLengthRange.value = relaxLengthInMinutes;
+      elements.workSessionsCompletedCount.innerText = workSessionsCompleted.toString();
+      
+      // Update favicon based on current mode
+      if (currentMode === 'Work') {
+        elements.favicon.href = "data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍅</text></svg>";
+      } else {
+        elements.favicon.href = "data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏝</text></svg>";
+      }
+      
+      // Update play/pause button state
+      const playPauseIcon = elements.toggleStartButton.querySelector('i');
+      if (isPaused) {
+        playPauseIcon.classList.remove('fa-pause');
+        playPauseIcon.classList.add('fa-play');
+      } else {
+        playPauseIcon.classList.remove('fa-play');
+        playPauseIcon.classList.add('fa-pause');
+        // If not paused, start the timer
+        latestUpdateTime = Date.now();
+        startTimer();
+      }
+      
+      updateTimer();
+      return true;
+    } else {
+      // Clear old session data from a different day
+      localStorage.removeItem('pomodoroSessionState');
+      return false;
+    }
+  } catch (error) {
+    console.error('Error loading session state:', error);
+    localStorage.removeItem('pomodoroSessionState');
+    return false;
+  }
+};
+
+const clearSessionState = () => {
+  localStorage.removeItem('pomodoroSessionState');
+};
+
+// Check if we need to clear session state due to date change
+const checkDateChange = () => {
+  const savedSession = localStorage.getItem('pomodoroSessionState');
+  if (savedSession) {
+    try {
+      const sessionData = JSON.parse(savedSession);
+      const currentDateKey = getCurrentDateKey();
+      
+      // If the saved session is from a different day, clear it
+      if (sessionData.dateKey !== currentDateKey) {
+        clearSessionState();
+        // Reset to default state
+        workSessionsCompleted = 0;
+        currentMode = 'Work';
+        timeConsumedInSeconds = 0;
+        isPaused = true;
+        elements.workSessionsCompletedCount.innerText = '0';
+        elements.modeHeader.innerText = currentMode;
+        elements.favicon.href = "data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍅</text></svg>";
+        updateTimer();
+      }
+    } catch (error) {
+      console.error('Error checking date change:', error);
+      clearSessionState();
+    }
+  }
+};
+
 const init = () => {
-  elements.workLength.innerText = workLengthInMinutes
-  elements.relaxLength.innerText = relaxLengthInMinutes
-  elements.workLengthRange.value = workLengthInMinutes
-  elements.relaxLengthRange.value = relaxLengthInMinutes
-  updateTimer()
+  // Check for date changes first
+  checkDateChange()
+  
+  // Try to load session state first
+  const sessionRestored = loadSessionState()
+  
+  // If no session was restored, use default values
+  if (!sessionRestored) {
+    elements.workLength.innerText = workLengthInMinutes
+    elements.relaxLength.innerText = relaxLengthInMinutes
+    elements.workLengthRange.value = workLengthInMinutes
+    elements.relaxLengthRange.value = relaxLengthInMinutes
+    updateTimer()
+  }
+  
   checkIfIOS()
   updateDailyDisplay()
 
@@ -544,6 +677,19 @@ const init = () => {
   if (elements.timeframeSelect) {
     elements.timeframeSelect.addEventListener('change', updateHistoryChart);
   }
+  
+  // Save session state when page is about to unload
+  window.addEventListener('beforeunload', saveSessionState);
+  
+  // Save session state periodically even when paused (every 30 seconds)
+  setInterval(() => {
+    saveSessionState();
+  }, 30000);
+  
+  // Check for date changes periodically (every minute)
+  setInterval(() => {
+    checkDateChange();
+  }, 60000);
 }
 
 init()
