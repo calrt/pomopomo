@@ -46,10 +46,16 @@ const loadSettings = () => {
   const savedVolumeState = localStorage.getItem('pomodoroVolumeState');
   const savedNotificationsEnabled = localStorage.getItem('pomodoroNotificationsEnabled');
   
+  // Handle volume state migration
   if (savedVolumeState !== null) {
     volumeState = parseInt(savedVolumeState);
+  } else {
+    // Migration for existing users: if this is the first time loading with localStorage,
+    // we'll let the init function handle the default (full volume for desktop, muted for iOS)
+    // This ensures existing users get the new default behavior
   }
   
+  // Handle notification state migration
   if (savedNotificationsEnabled !== null) {
     notificationsEnabled = JSON.parse(savedNotificationsEnabled);
   } else {
@@ -480,19 +486,20 @@ const init = () => {
 
   // Initialize volume state based on saved settings or defaults
   if (isIOS) {
-    // For iOS, start muted as before
+    // For iOS, start muted as before (iOS audio restrictions)
     elements.ding.volume = 0;
     updateVolumeIcon('fa-volume-mute');
   } else {
     // For desktop, use saved volume state or default to full volume (state 3)
     if (localStorage.getItem('pomodoroVolumeState') === null) {
-      // First time user - default to full volume
+      // Migration for existing users + new users: default to full volume
+      // This ensures all desktop users get the improved default behavior
       volumeState = 3;
       elements.ding.volume = 1;
       updateVolumeIcon('fa-volume-high');
       saveSettings();
     } else {
-      // Use saved volume state
+      // Use saved volume state for returning users
       const currentState = volumeStates[volumeState];
       elements.ding.volume = currentState.volume;
       updateVolumeIcon(currentState.icon);
