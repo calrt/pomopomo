@@ -41,6 +41,34 @@ let isIOS = false
 let notificationsEnabled = false
 let notificationsPermission = 'default'
 
+// Load saved settings from localStorage
+const loadSettings = () => {
+  const savedVolumeState = localStorage.getItem('pomodoroVolumeState');
+  const savedNotificationsEnabled = localStorage.getItem('pomodoroNotificationsEnabled');
+  
+  if (savedVolumeState !== null) {
+    volumeState = parseInt(savedVolumeState);
+  }
+  
+  if (savedNotificationsEnabled !== null) {
+    notificationsEnabled = JSON.parse(savedNotificationsEnabled);
+  } else {
+    // Migration for existing users: if they have notification permission granted,
+    // assume they had notifications enabled before this localStorage feature was added
+    if (Notification.permission === 'granted') {
+      notificationsEnabled = true;
+      // Save this preference so it persists going forward
+      localStorage.setItem('pomodoroNotificationsEnabled', 'true');
+    }
+  }
+};
+
+// Save settings to localStorage
+const saveSettings = () => {
+  localStorage.setItem('pomodoroVolumeState', volumeState.toString());
+  localStorage.setItem('pomodoroNotificationsEnabled', notificationsEnabled.toString());
+};
+
 // Allow the user to start the timer
 const startTimer = () => {
   let runTimer = setInterval(() => {
@@ -141,6 +169,7 @@ const cycleVolume = () => {
     const currentState = volumeStates[volumeState];
     elements.ding.volume = currentState.volume;
     updateVolumeIcon(currentState.icon);
+    saveSettings();
   }
 }
 
@@ -377,10 +406,14 @@ const updateNotificationState = (permission) => {
   const notificationIcon = elements.notificationButton.querySelector('i');
   
   if (permission === 'granted') {
-    // Don't automatically enable notifications or show a notification on page load
-    // Just update the icon to show they're available
-    notificationIcon.classList.remove('fa-bell-slash');
-    notificationIcon.classList.add('fa-bell');
+    // Use saved notification state if available, otherwise keep disabled
+    if (notificationsEnabled) {
+      notificationIcon.classList.remove('fa-bell-slash');
+      notificationIcon.classList.add('fa-bell');
+    } else {
+      notificationIcon.classList.remove('fa-bell');
+      notificationIcon.classList.add('fa-bell-slash');
+    }
   } else {
     notificationsEnabled = false;
     notificationIcon.classList.remove('fa-bell');
@@ -406,6 +439,7 @@ const toggleNotifications = async () => {
       notificationIcon.classList.remove('fa-bell');
       notificationIcon.classList.add('fa-bell-slash');
     }
+    saveSettings();
   }
 };
 
@@ -433,6 +467,9 @@ const init = () => {
   checkIfIOS()
   updateDailyDisplay()
 
+  // Load saved settings
+  loadSettings()
+
   // Setup the button click/input events
   elements.toggleStartButton.addEventListener('click', togglePause)
   elements.switchButton.addEventListener('click', switchModes)
@@ -440,11 +477,27 @@ const init = () => {
   elements.clearButton.addEventListener('click', clearCompletedSessions)
   elements.workLengthRange.addEventListener('input', (e) => adjustTime('Work', e.target.value))
   elements.relaxLengthRange.addEventListener('input', (e) => adjustTime('Relax', e.target.value))
-  elements.ding.volume = 0
 
-  // Initialize volume state
-  elements.ding.volume = 0;
-  updateVolumeIcon('fa-volume-mute');
+  // Initialize volume state based on saved settings or defaults
+  if (isIOS) {
+    // For iOS, start muted as before
+    elements.ding.volume = 0;
+    updateVolumeIcon('fa-volume-mute');
+  } else {
+    // For desktop, use saved volume state or default to full volume (state 3)
+    if (localStorage.getItem('pomodoroVolumeState') === null) {
+      // First time user - default to full volume
+      volumeState = 3;
+      elements.ding.volume = 1;
+      updateVolumeIcon('fa-volume-high');
+      saveSettings();
+    } else {
+      // Use saved volume state
+      const currentState = volumeStates[volumeState];
+      elements.ding.volume = currentState.volume;
+      updateVolumeIcon(currentState.icon);
+    }
+  }
 
   // Check if notifications are supported and initialize
   if ('Notification' in window) {
